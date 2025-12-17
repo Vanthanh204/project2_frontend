@@ -1,10 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://project2-backend-nu.vercel.app/",
-  headers: {
-    "Content-Type": "application/json"
-  }
+  baseURL: "https://project2-backend-xz70.onrender.com/api"
 });
 
 export default API;
