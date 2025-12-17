@@ -4,7 +4,14 @@ import "../App.css";
 
 function Admin() {
   const [rooms, setRooms] = useState([]);
+  const [newRoom, setNewRoom] = useState({
+    name: "",
+    type: "",
+    price: "",
+    capacity: ""
+  });
 
+  // LOAD ROOMS
   const loadRooms = async () => {
     const res = await API.get("/rooms");
     setRooms(res.data);
@@ -14,52 +21,114 @@ function Admin() {
     loadRooms();
   }, []);
 
-  const toggleStatus = async (room) => {
-    const newStatus =
-      room.status === "booked" ? "available" : "booked";
+  // ADD ROOM
+  const addRoom = async () => {
+    if (!newRoom.name || !newRoom.type || !newRoom.price) {
+      alert("Nhập đầy đủ thông tin");
+      return;
+    }
 
-    await API.put(`/rooms/${room._id}/status`, {
-      status: newStatus
+    await API.post("/rooms", {
+      ...newRoom,
+      price: Number(newRoom.price),
+      capacity: Number(newRoom.capacity)
     });
 
+    setNewRoom({ name: "", type: "", price: "", capacity: "" });
     loadRooms();
   };
 
+  // DELETE ROOM
   const deleteRoom = async (id) => {
     if (!window.confirm("Xóa phòng này?")) return;
-
     await API.delete(`/rooms/${id}`);
+    loadRooms();
+  };
+
+  // CHANGE STATUS
+  const changeStatus = async (id, status) => {
+    await API.put(`/rooms/${id}/status`, { status });
     loadRooms();
   };
 
   return (
     <div className="container">
-      <h1>🔐 Admin – Quản lý phòng</h1>
+      <h1>👨‍💼 ADMIN – Quản lý phòng</h1>
 
-      <div className="rooms">
-        {rooms.map((room) => (
-          <div key={room._id} className={`room ${room.status}`}>
-            <h3>{room.name}</h3>
-            <p>Giá: {room.price} VND</p>
-            <p>
-              Trạng thái: <b>{room.status}</b>
-            </p>
+      {/* ADD ROOM */}
+      <div className="box">
+        <h2>➕ Thêm phòng</h2>
 
-            <button onClick={() => toggleStatus(room)}>
-              {room.status === "booked"
-                ? "Trả phòng"
-                : "Đánh dấu đã đặt"}
-            </button>
+        <input
+          placeholder="Tên phòng"
+          value={newRoom.name}
+          onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })}
+        />
 
-            <button
-              style={{ background: "red", marginTop: 8 }}
-              onClick={() => deleteRoom(room._id)}
-            >
-              Xóa phòng
-            </button>
-          </div>
-        ))}
+        <input
+          placeholder="Loại phòng"
+          value={newRoom.type}
+          onChange={(e) => setNewRoom({ ...newRoom, type: e.target.value })}
+        />
+
+        <input
+          placeholder="Giá"
+          type="number"
+          value={newRoom.price}
+          onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })}
+        />
+
+        <input
+          placeholder="Sức chứa"
+          type="number"
+          value={newRoom.capacity}
+          onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })}
+        />
+
+        <button onClick={addRoom}>Thêm phòng</button>
       </div>
+
+      {/* ROOMS TABLE */}
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th>Loại</th>
+            <th>Giá</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rooms.map((room) => (
+            <tr key={room._id}>
+              <td>{room.name}</td>
+              <td>{room.type}</td>
+              <td>{room.price}</td>
+              <td>{room.status}</td>
+              <td>
+                <button
+                  onClick={() =>
+                    changeStatus(
+                      room._id,
+                      room.status === "available" ? "booked" : "available"
+                    )
+                  }
+                >
+                  Đổi trạng thái
+                </button>
+
+                <button
+                  style={{ background: "red", marginLeft: 5 }}
+                  onClick={() => deleteRoom(room._id)}
+                >
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
