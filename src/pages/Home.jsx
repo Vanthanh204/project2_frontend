@@ -72,6 +72,7 @@ function Home() {
       {/* MAIN */}
       <main className="container">
         {/* ROOMS LIST */}
+        <h1> Bai KT_DH52201450_Ca2</h1>
         <section>
           <h2>🛏️ Danh sách phòng</h2>
 
